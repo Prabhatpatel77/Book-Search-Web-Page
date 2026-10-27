@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Book Search using jQuery AJAX</title>
+
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .search-box {
+            margin: 20px 0;
+        }
+
+        #searchBook {
+            width: 300px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #searchBtn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #searchBtn:hover {
+            background-color: #0056b3;
+        }
+
+        #bookList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .book {
+            width: 220px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .book img {
+            width: 120px;
+            height: 170px;
+            object-fit: cover;
+        }
+
+        .book h2 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .book p {
+            color: #555;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>Book Search</h1>
+
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchBook"
+                placeholder="Enter book name"
+            >
+
+            <button id="searchBtn">
+                Search
+            </button>
+
+        </div>
+
+
+        <div id="message"></div>
+
+
+        <div id="bookList"></div>
+
+    </div>
+
+
+
+    <script>
+
+        $(document).ready(function () {
+
+
+            // When Search button is clicked
+            $("#searchBtn").click(function () {
+
+
+                // Get book name from input
+                let bookName = $("#searchBook").val().trim();
+
+
+                // Check empty input
+                if (bookName === "") {
+
+                    $("#message").text(
+                        "Please enter a book name."
+                    );
+
+                    return;
+                }
+
+
+                // Show loading message
+                $("#message").text("Loading books...");
+
+
+                // Clear previous results
+                $("#bookList").empty();
+
+
+                // Create API URL
+                let apiURL =
+                    "https://openlibrary.org/search.json?q="
+                    + encodeURIComponent(bookName);
+
+
+                // AJAX request
+                $.ajax({
+
+                    url: apiURL,
+
+                    method: "GET",
+
+                    dataType: "json",
+
+
+                    // If request is successful
+                    success: function (data) {
+
+
+                        $("#message").text(
+                            "Books found: " + data.numFound
+                        );
+
+
+                        // Display first 10 books
+                        data.docs.slice(0, 10).forEach(
+                            function (book) {
+
+
+                                // Get author
+                                let author =
+                                    book.author_name
+                                    ? book.author_name[0]
+                                    : "Unknown";
+
+
+                                // Get publication year
+                                let year =
+                                    book.first_publish_year
+                                    ? book.first_publish_year
+                                    : "Unknown";
+
+
+                                // Get cover image
+                                let cover = book.cover_i
+                                    ? "https://covers.openlibrary.org/b/id/"
+                                      + book.cover_i
+                                      + "-M.jpg"
+                                    : "https://via.placeholder.com/120x170?text=No+Cover";
+
+
+                                // Display book
+                                $("#bookList").append(`
+
+                                    <div class="book">
+
+                                        <img
+                                            src="${cover}"
+                                            alt="Book Cover"
+                                        >
+
+                                        <h2>
+                                            ${book.title}
+                                        </h2>
+
+                                        <p>
+                                            <strong>Author:</strong>
+                                            ${author}
+                                        </p>
+
+                                        <p>
+                                            <strong>Year:</strong>
+                                            ${year}
+                                        </p>
+
+                                    </div>
+
+                                `);
+
+                            }
+                        );
+
+                    },
+
+
+                    // If request fails
+                    error: function () {
+
+                        $("#message").text(
+                            "Unable to fetch book data."
+                        );
+
+                    }
+
+                });
+
+            });
+
+
+            // Allow Enter key to search
+            $("#searchBook").keypress(function (event) {
+
+                if (event.which === 13) {
+
+                    $("#searchBtn").click();
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>
